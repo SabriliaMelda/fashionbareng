@@ -1,13 +1,16 @@
 // home_screen.dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+
 import 'package:fashion_mobile/pages/pembelian.dart';
 import 'package:fashion_mobile/pages/promosi.dart';
 import 'package:fashion_mobile/pages/rugi_laba.dart';
 import 'package:fashion_mobile/pages/settings.dart';
 import 'package:fashion_mobile/pages/upah.dart';
 import 'package:fashion_mobile/pages/wishlist.dart';
-import 'package:flutter/material.dart';
-import 'profile.dart';
 import 'package:fashion_mobile/pages/checkout.dart';
+
+import 'profile.dart';
 import 'kelola_proyek.dart';
 import 'bahan_baku.dart';
 import 'chat.dart';
@@ -15,7 +18,6 @@ import 'keuangan.dart';
 import 'jadwal.dart';
 import 'pola.dart';
 import 'pekerja.dart';
-import 'dart:async';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -24,6 +26,10 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // ✅ SIDEBAR (DRAWER)
+      drawer: const _AppSidebar(),
+
       bottomNavigationBar: const _BottomNavBar(),
       body: SafeArea(
         child: Column(
@@ -79,7 +85,15 @@ class _HeaderSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.menu, color: Colors.white),
+              // ✅ MENU BUTTON BUKA DRAWER
+              Builder(
+                builder: (context) => InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  child: const Icon(Icons.menu, color: Colors.white),
+                ),
+              ),
+
               const Text(
                 'Konveksi Bareng',
                 style: TextStyle(
@@ -345,9 +359,7 @@ class _PromoCard extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6B257F),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -429,73 +441,52 @@ class _MenuGrid extends StatelessWidget {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const JadwalScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const JadwalScreen()),
               );
             };
-          }
-          else if (label == 'Pola') {
+          } else if (label == 'Pola') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const PolaScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PolaScreen()),
               );
             };
           } else if (label == 'Pekerja') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const PekerjaScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PekerjaScreen()),
               );
             };
           } else if (label == 'Chat') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ChatScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const ChatScreen()),
               );
             };
           } else if (label == 'Beli') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const PembelianScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PembelianScreen()),
               );
             };
-          }
-
-          else if (label == 'Promosi') {
+          } else if (label == 'Promosi') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const PromosiScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PromosiScreen()),
               );
             };
-          }
-
-          else if (label == 'Wishlist') {
+          } else if (label == 'Wishlist') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const WishlistScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const WishlistScreen()),
               );
             };
-          }
-
-          else if (label == 'Rugi Laba') {
+          } else if (label == 'Rugi Laba') {
             onTap = () {
               Navigator.push(
                 context,
@@ -504,17 +495,16 @@ class _MenuGrid extends StatelessWidget {
                 ),
               );
             };
-          }
-
-          else if (label == 'Upah') {
+          } else if (label == 'Upah') {
             onTap = () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const UpahScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const UpahScreen()),
               );
             };
+          } else if (label == 'More') {
+            // Optional: buka drawer saat klik More
+            onTap = () => Scaffold.of(context).openDrawer();
           }
 
           return _MenuItem(
@@ -612,7 +602,6 @@ class _FeatureGrid extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -628,43 +617,30 @@ class _FeatureGrid extends StatelessWidget {
               final title = item.$1;
               final icon = item.$2;
 
-              final isKelolaProyek = title == 'Kelola Proyek';
-
               return InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
-                  if (isKelolaProyek) {
-                    // ke Kelola Proyek
+                  if (title == 'Kelola Proyek') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const KelolaProyekScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const KelolaProyekScreen()),
                     );
                   } else if (title == 'Bahan Baku') {
-                    // ke Bahan Baku
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const BahanBakuScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const BahanBakuScreen()),
                     );
                   } else if (title == 'Komunitas') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const ChatScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const ChatScreen()),
                     );
                   } else if (title == 'Keuangan') {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const KeuanganScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const KeuanganScreen()),
                     );
                   }
-                  // kalau mau, tambahkan else if lainnya di sini
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -674,13 +650,8 @@ class _FeatureGrid extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(
-                        icon,
-                        size: 90,
-                        color: const Color(0xFF6B257F),
-                      ),
+                      Icon(icon, size: 90, color: const Color(0xFF6B257F)),
                       const SizedBox(height: 12),
                       Text(
                         title,
@@ -733,10 +704,7 @@ class _FlashDealSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0x1EEB6383),
                       borderRadius: BorderRadius.circular(20),
@@ -764,9 +732,7 @@ class _FlashDealSection extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
           SizedBox(
             height: 210,
             child: ListView(
@@ -788,30 +754,6 @@ class _FlashDealSection extends StatelessWidget {
                   imageUrl: 'assets/images/adidas.jpg',
                 ),
                 SizedBox(width: 16),
-                _ProductCard(
-                  title: 'Dry-Fit Legend',
-                  subtitle: 'Nike Training Tee',
-                  price: '\$39,90',
-                  oldPrice: '\$45,00',
-                  imageUrl: 'assets/images/nike.jpg',
-                ),
-                SizedBox(width: 16),
-                _ProductCard(
-                  title: 'Essentials Linear',
-                  subtitle: 'Adidas Basic Tee',
-                  price: '\$44,50',
-                  oldPrice: '\$52,00',
-                  imageUrl: 'assets/images/adidas.jpg',
-                ),
-                SizedBox(width: 16),
-                _ProductCard(
-                  title: 'Running Pack',
-                  subtitle: 'Nike Combo 2in1',
-                  price: '\$79,99',
-                  oldPrice: '\$89,99',
-                  imageUrl: 'assets/images/nike.jpg',
-                ),
-                SizedBox(width: 16),
                 _SeeAllCard(),
               ],
             ),
@@ -822,9 +764,6 @@ class _FlashDealSection extends StatelessWidget {
   }
 }
 
-//
-// ================== PRODUCT CARD ==================
-//
 class _ProductCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -847,7 +786,6 @@ class _ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // image box
           Container(
             height: 130,
             decoration: BoxDecoration(
@@ -966,11 +904,7 @@ class _SeeAllCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(
-                Icons.arrow_forward,
-                color: Colors.white,
-                size: 28,
-              ),
+              Icon(Icons.arrow_forward, color: Colors.white, size: 28),
               SizedBox(height: 8),
               Text(
                 'Lihat Semua',
@@ -1002,9 +936,7 @@ class _BottomNavBar extends StatelessWidget {
       height: 72,
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE8ECF4)),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFE8ECF4))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1013,9 +945,7 @@ class _BottomNavBar extends StatelessWidget {
             label: 'Home',
             icon: Icons.home_filled,
             active: true,
-            onTap: () {
-              // sudah di home
-            },
+            onTap: () {},
           ),
           _BottomNavItem(
             label: 'Wishlist',
@@ -1023,9 +953,7 @@ class _BottomNavBar extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const WishlistScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const WishlistScreen()),
               );
             },
           ),
@@ -1035,9 +963,7 @@ class _BottomNavBar extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
@@ -1047,9 +973,7 @@ class _BottomNavBar extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ChatScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const ChatScreen()),
               );
             },
           ),
@@ -1059,9 +983,7 @@ class _BottomNavBar extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ProfileScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
             },
           ),
@@ -1114,3 +1036,394 @@ class _BottomNavItem extends StatelessWidget {
     );
   }
 }
+
+//
+// ================== SIDEBAR / DRAWER ==================
+//
+class _AppSidebar extends StatelessWidget {
+  const _AppSidebar();
+
+  static const Color _main = Color(0xFF6B257F);
+  static const Color _mainDark = Color(0xFF50047D);
+  static const Color _bg = Color(0xFFF7F5F1);
+  static const Color _text = Color(0xFF111827);
+  static const Color _muted = Color(0xFF6B7280);
+
+  void _go(BuildContext context, Widget page) {
+    Navigator.pop(context); // tutup drawer
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // ===== HEADER (GRADIENT + PROFIL) =====
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_main, _mainDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // avatar
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.25),
+                      ),
+                    ),
+                    child: const Icon(Icons.person, color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // nama + role
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Nama Pengguna',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: Colors.white.withOpacity(0.25)),
+                              ),
+                              child: const Text(
+                                'Owner Konveksi',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Plus Jakarta Sans',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.verified, color: Colors.white, size: 16),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // close
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+
+            // ===== BODY =====
+            Expanded(
+              child: Container(
+                color: Colors.white,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                  children: [
+                    _sectionLabel('UTAMA'),
+
+                    _navTile(
+                      context,
+                      icon: Icons.assignment_rounded,
+                      label: 'Kelola Proyek',
+                      subtitle: 'Manajemen order & pekerjaan',
+                      onTap: () => _go(context, const KelolaProyekScreen()),
+                    ),
+                    _navTile(
+                      context,
+                      icon: Icons.inventory_2_rounded,
+                      label: 'Bahan Baku',
+                      subtitle: 'Stok, supplier, pemakaian',
+                      onTap: () => _go(context, const BahanBakuScreen()),
+                    ),
+                    _navTile(
+                      context,
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: 'Keuangan',
+                      subtitle: 'Cashflow & pencatatan',
+                      onTap: () => _go(context, const KeuanganScreen()),
+                    ),
+                    _navTile(
+                      context,
+                      icon: Icons.chat_bubble_outline_rounded,
+                      label: 'Chat',
+                      subtitle: 'Komunikasi internal',
+                      onTap: () => _go(context, const ChatScreen()),
+                    ),
+                    _navTile(
+                      context,
+                      icon: Icons.favorite_border_rounded,
+                      label: 'Wishlist',
+                      subtitle: 'Simpan item favorit',
+                      onTap: () => _go(context, const WishlistScreen()),
+                    ),
+
+                    const SizedBox(height: 14),
+                    _dividerPill(),
+                    const SizedBox(height: 14),
+
+                    _sectionLabel('AKUN'),
+
+                    _navTile(
+                      context,
+                      icon: Icons.person_outline_rounded,
+                      label: 'Profile',
+                      subtitle: 'Data akun & bisnis',
+                      onTap: () => _go(context, const ProfileScreen()),
+                    ),
+                    _navTile(
+                      context,
+                      icon: Icons.settings_outlined,
+                      label: 'Settings',
+                      subtitle: 'Preferensi aplikasi',
+                      onTap: () => _go(context, const SettingsScreen()),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // ===== CTA BAWAH (OPSIONAL) =====
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _bg,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.lightbulb_outline, color: _main),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tips: rapikan alur produksi di Kelola Proyek untuk hasil lebih cepat.',
+                              style: TextStyle(
+                                color: _muted,
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ===== FOOTER =====
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _ghostButton(
+                      label: 'Logout',
+                      icon: Icons.logout_rounded,
+                      onTap: () {
+                        // TODO: logout action (kalau sudah ada auth)
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _primaryButton(
+                      label: 'Upgrade',
+                      icon: Icons.workspace_premium_rounded,
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: arahkan ke halaman upgrade jika ada
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, bottom: 10),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: _muted,
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _dividerPill() {
+    return Container(
+      height: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8ECF4),
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+
+  Widget _navTile(
+      BuildContext context, {
+        required IconData icon,
+        required String label,
+        required String subtitle,
+        required VoidCallback onTap,
+      }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          decoration: BoxDecoration(
+            color: _bg,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE8ECF4)),
+                ),
+                child: Icon(icon, color: _main, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: _text,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: _muted,
+                        fontFamily: 'Plus Jakarta Sans',
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: _muted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _primaryButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 18),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _main,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      ),
+    );
+  }
+
+  Widget _ghostButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 18, color: _main),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w800,
+            color: _main,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFE8ECF4)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+

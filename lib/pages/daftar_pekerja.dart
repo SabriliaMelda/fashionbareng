@@ -1,5 +1,5 @@
-// daftar_pekerja.dart
 import 'package:flutter/material.dart';
+import 'pekerja_detail.dart';
 
 const kPurple = Color(0xFF6B257F);
 
@@ -12,22 +12,24 @@ class DaftarPekerjaScreen extends StatefulWidget {
 
 class _DaftarPekerjaScreenState extends State<DaftarPekerjaScreen> {
   final TextEditingController _searchC = TextEditingController();
+  String _query = '';
 
-  // ✅ HANYA LIST PEKERJA (tanpa "Daftarkan Pekerja..")
   final List<_PekerjaItem> _items = [
     _PekerjaItem(
-      title: 'santy',
-      subtitle: 'Pekerja',
-      icon: Icons.person_outline,
+      nama: 'Santy',
+      role: 'Pekerja Jahit',
+      avatarAsset: 'assets/images/pekerja/santy.jpg', // opsional
+      projects: ['Project C', 'Project D', 'Project E'],
+      isBookmark: false,
     ),
     _PekerjaItem(
-      title: 'pekerja 2, dst',
-      subtitle: 'Pekerja',
-      icon: Icons.person_outline,
+      nama: 'Pekerja 2',
+      role: 'Pekerja Obras',
+      avatarAsset: 'assets/images/pekerja/pekerja2.jpg',
+      projects: ['Project A', 'Project B'],
+      isBookmark: true, // ★ contoh bookmark
     ),
   ];
-
-  String _query = '';
 
   @override
   void dispose() {
@@ -39,8 +41,12 @@ class _DaftarPekerjaScreenState extends State<DaftarPekerjaScreen> {
   Widget build(BuildContext context) {
     final filtered = _items.where((e) {
       if (_query.trim().isEmpty) return true;
-      return e.title.toLowerCase().contains(_query.toLowerCase());
+      final q = _query.toLowerCase();
+      return e.nama.toLowerCase().contains(q) || e.role.toLowerCase().contains(q);
     }).toList();
+
+    final normal = filtered.where((e) => !e.isBookmark).toList();
+    final bookmarked = filtered.where((e) => e.isBookmark).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,61 +69,79 @@ class _DaftarPekerjaScreenState extends State<DaftarPekerjaScreen> {
             ),
 
             Expanded(
-              child: ListView.separated(
+              child: ListView(
                 padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-                itemCount: filtered.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, i) {
-                  final item = filtered[i];
+                children: [
+                  ...normal.map((p) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _PekerjaTile(
+                      nama: p.nama,
+                      role: p.role,
+                      projectsCount: p.projects.length,
+                      avatarAsset: p.avatarAsset,
+                      trailing: const Icon(Icons.chevron_right, color: Color(0xFF8F9BB3)),
+                      onTap: () => _openDetail(context, p),
+                    ),
+                  )),
 
-                  return _BookmarkListTile(
-                    title: item.title,
-                    subtitle: item.subtitle,
-                    icon: item.icon,
-                    leadingBg: Colors.white,
-                    onTap: () {
-                      // ✅ SEKARANG SEMUA ITEM ADALAH PEKERJA
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Buka detail: ${item.title}')),
-                      );
-                    },
-                  );
-                },
+                  if (bookmarked.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    const _SectionLabel(text: '★ Bookmark'),
+                    const SizedBox(height: 10),
+                    ...bookmarked.map((p) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _PekerjaTile(
+                        nama: p.nama,
+                        role: p.role,
+                        projectsCount: p.projects.length,
+                        avatarAsset: p.avatarAsset,
+                        trailing: const Icon(Icons.star, size: 18, color: kPurple),
+                        onTap: () => _openDetail(context, p),
+                      ),
+                    )),
+                  ],
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
 
-      // (opsional) kalau kamu juga mau hapus tombol +, hapus blok ini
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: kPurple,
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tambah pekerja')),
-          );
-        },
-        child: const Icon(Icons.add, size: 26),
+  void _openDetail(BuildContext context, _PekerjaItem p) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PekerjaDetailScreen(
+          nama: p.nama,
+          role: p.role,
+          avatarAsset: p.avatarAsset,
+          projects: p.projects,
+        ),
       ),
     );
   }
 }
 
 class _PekerjaItem {
-  final String title;
-  final String subtitle;
-  final IconData icon;
+  final String nama;
+  final String role;
+  final String? avatarAsset;
+  final List<String> projects;
+  final bool isBookmark;
 
   _PekerjaItem({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
+    required this.nama,
+    required this.role,
+    required this.projects,
+    this.avatarAsset,
+    this.isBookmark = false,
   });
 }
 
-//
-// ================== TOP HEADER (BACK + TITLE + HOME) ==================
-//
+// ================== UI KOMPONEN ==================
+
 class _TopHeader extends StatelessWidget {
   final String title;
   const _TopHeader({required this.title});
@@ -129,10 +153,7 @@ class _TopHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _CircleIcon(
-            icon: Icons.arrow_back,
-            onTap: () => Navigator.pop(context),
-          ),
+          _CircleIcon(icon: Icons.arrow_back, onTap: () => Navigator.pop(context)),
           Text(
             title,
             style: const TextStyle(
@@ -143,11 +164,7 @@ class _TopHeader extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          _CircleIcon(
-            icon: Icons.home_filled,
-            iconColor: kPurple,
-            onTap: () => Navigator.pop(context),
-          ),
+          _CircleIcon(icon: Icons.home_filled, iconColor: kPurple, onTap: () => Navigator.pop(context)),
         ],
       ),
     );
@@ -185,9 +202,6 @@ class _CircleIcon extends StatelessWidget {
   }
 }
 
-//
-// ================== SEARCH BOX ==================
-//
 class _SearchBox extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
@@ -226,11 +240,6 @@ class _SearchBox extends StatelessWidget {
                   fontFamily: 'Lato',
                 ),
               ),
-              style: const TextStyle(
-                color: Color(0xFF111111),
-                fontSize: 14,
-                fontFamily: 'Lato',
-              ),
             ),
           ),
           if (controller.text.isNotEmpty)
@@ -248,22 +257,39 @@ class _SearchBox extends StatelessWidget {
   }
 }
 
-//
-// ================== LIST TILE STYLE "BOOKMARK" ==================
-//
-class _BookmarkListTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color leadingBg;
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Color(0xFF6B7280),
+        fontSize: 12,
+        fontFamily: 'Work Sans',
+        fontWeight: FontWeight.w800,
+      ),
+    );
+  }
+}
+
+class _PekerjaTile extends StatelessWidget {
+  final String nama;
+  final String role;
+  final int projectsCount;
+  final String? avatarAsset;
+  final Widget trailing;
   final VoidCallback onTap;
 
-  const _BookmarkListTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.leadingBg,
+  const _PekerjaTile({
+    required this.nama,
+    required this.role,
+    required this.projectsCount,
+    required this.trailing,
     required this.onTap,
+    this.avatarAsset,
   });
 
   @override
@@ -280,36 +306,26 @@ class _BookmarkListTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: leadingBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE8ECF4)),
-              ),
-              alignment: Alignment.center,
-              child: Icon(icon, color: kPurple, size: 20),
-            ),
+            _Avatar(asset: avatarAsset, name: nama),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    nama,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xFF111111),
                       fontSize: 14,
                       fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
-                    subtitle,
+                    '$role • $projectsCount proyek',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -322,8 +338,50 @@ class _BookmarkListTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF8F9BB3)),
+            trailing,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  final String? asset;
+  final String name;
+  const _Avatar({required this.asset, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    if (asset != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.asset(
+          asset!,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallback(),
+        ),
+      );
+    }
+    return _fallback();
+  }
+
+  Widget _fallback() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3E4FF),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'P',
+        style: const TextStyle(
+          color: kPurple,
+          fontWeight: FontWeight.w900,
         ),
       ),
     );

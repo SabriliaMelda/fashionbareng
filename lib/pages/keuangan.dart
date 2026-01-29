@@ -12,66 +12,61 @@ import 'home.dart';
 // ✅ sesuaikan path sesuai struktur kamu
 import 'keuanganproyek.dart';
 
+const kPurple = Color(0xFF6B257F);
+
 class KeuanganScreen extends StatelessWidget {
   const KeuanganScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const purple = Color(0xFF6B257F);
+    // dummy angka (nanti bisa dari API)
+    const totalBalance = 'Rp 7.783.000';
+    const totalIncome = 'Rp 3.200.000';
+    const totalExpense = 'Rp 1.187.400';
+
+    // dummy target
+    const target = 'Rp 20.000.000';
+    const progressValue = 0.30; // 30%
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F7FB),
       body: SafeArea(
         child: Column(
           children: [
-            // ========= HEADER UNGU =========
+            // ================= HEADER =================
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
               decoration: const BoxDecoration(
-                color: purple,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(24),
+                color: kPurple,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
                 ),
               ),
               child: Column(
                 children: [
-                  // --- top bar back + title + home ---
+                  // top bar
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // back
-                      InkWell(
-                        borderRadius: BorderRadius.circular(24),
+                      _HeaderIcon(
+                        icon: Icons.arrow_back_ios_new_rounded,
                         onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(32),
-                            border: Border.all(
-                              color: const Color(0xFFDFDEDE),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 18,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Keuangan',
+                          style: TextStyle(
                             color: Colors.white,
+                            fontSize: 18,
+                            fontFamily: 'Encode Sans',
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ),
-                      const Text(
-                        'Keuangan',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontFamily: 'Encode Sans',
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                        ),
-                      ),
-                      // home button
-                      InkWell(
-                        borderRadius: BorderRadius.circular(24),
+                      _HeaderIcon(
+                        icon: Icons.home_filled,
                         onTap: () {
                           Navigator.pushAndRemoveUntil(
                             context,
@@ -79,175 +74,159 @@ class KeuanganScreen extends StatelessWidget {
                                 (route) => false,
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(32),
-                            border: Border.all(
-                              color: const Color(0xFFDFDEDE),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.home_filled,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                        ),
                       ),
                     ],
                   ),
 
                   const SizedBox(height: 16),
 
-                  // --- summary: total balance & expense ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // left
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Total Balance',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w400,
-                            ),
+                  // balance card (di dalam header)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Total Balance',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontFamily: 'Work Sans',
+                            fontWeight: FontWeight.w700,
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            '\$7,783.00',
-                            style: TextStyle(
-                              color: Color(0xFFF1FFF3),
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w700,
-                            ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          totalBalance,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontFamily: 'Encode Sans',
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
                           ),
-                        ],
-                      ),
-                      Container(
-                        height: 42,
-                        width: 1,
-                        color: const Color(0xFFDFF7E2),
-                      ),
-                      // right
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Total Expense',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            '-\$1,187.40',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 24,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                        const SizedBox(height: 14),
 
-                  const SizedBox(height: 20),
-
-                  // --- progress bar 30% ---
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 27,
-                        child: Stack(
-                          children: [
-                            // background dark
-                            Container(
-                              height: 27,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF052224),
-                                borderRadius: BorderRadius.circular(13.5),
+                        Row(
+                          children: const [
+                            Expanded(
+                              child: _MiniStat(
+                                label: 'Pemasukan',
+                                value: totalIncome,
+                                icon: Icons.trending_up_rounded,
+                                valueColor: Color(0xFFF1FFF3),
                               ),
                             ),
-                            // hijau progress (75%)
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                final width = constraints.maxWidth * 0.75;
-                                return Positioned(
-                                  left: constraints.maxWidth * 0.22,
-                                  child: Container(
-                                    height: 27,
-                                    width: width,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1FFF3),
-                                      borderRadius: BorderRadius.circular(13.5),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            // text 30%
-                            const Positioned(
-                              left: 12,
-                              top: 5,
-                              child: Text(
-                                '30%',
-                                style: TextStyle(
-                                  color: Color(0xFFF1FFF3),
-                                  fontSize: 12,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ),
-                            // text 20.000
-                            const Positioned(
-                              right: 12,
-                              top: 5,
-                              child: Text(
-                                '\$20,000.00',
-                                style: TextStyle(
-                                  color: Color(0xFF052224),
-                                  fontSize: 13,
-                                  fontFamily: 'Poppins',
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: _MiniStat(
+                                label: 'Pengeluaran',
+                                value: totalExpense,
+                                icon: Icons.trending_down_rounded,
+                                valueColor: Color(0xFFFFC2D1),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '30% Of Your Expenses, Looks Good.',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w400,
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // target progress
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: const [
+                            Text(
+                              'Target Bulanan',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                fontFamily: 'Work Sans',
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Spacer(),
+                            Text(
+                              target,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontFamily: 'Work Sans',
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+
+                        // progress bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            value: progressValue,
+                            minHeight: 10,
+                            backgroundColor: Colors.white.withOpacity(0.18),
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF1FFF3)),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        Text(
+                          '${(progressValue * 100).round()}% dari target, lanjutkan.',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontFamily: 'Work Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
 
-            // ========= BODY PUTIH (SCROLLABLE) =========
+            // ================= BODY =================
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: const _MenuGridKeuangan(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Menu Keuangan',
+                      style: TextStyle(
+                        color: Color(0xFF24252C),
+                        fontSize: 16,
+                        fontFamily: 'Encode Sans',
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    _MenuGridKeuangan(),
+                    SizedBox(height: 18),
+                  ],
+                ),
               ),
             ),
           ],
@@ -257,92 +236,163 @@ class KeuanganScreen extends StatelessWidget {
   }
 }
 
+// ================= HEADER ICON =================
+class _HeaderIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HeaderIcon({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+}
+
+// ================= MINI STAT =================
+class _MiniStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color valueColor;
+
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: valueColor,
+                    fontSize: 14,
+                    fontFamily: 'Work Sans',
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ===== MODEL MENU =====
 class _FinanceMenu {
   final String label;
+  final String desc;
   final IconData icon;
 
   const _FinanceMenu({
     required this.label,
+    required this.desc,
     required this.icon,
   });
 }
 
-// ===== GRID MENU (8 ITEM) =====
+// ===== GRID MENU (2 KOLOM CARD) =====
 class _MenuGridKeuangan extends StatelessWidget {
-  final List<_FinanceMenu> menus = const [
-    _FinanceMenu(label: 'Keuangan', icon: Icons.savings),
-    _FinanceMenu(label: 'Operasional', icon: Icons.local_shipping),
-    _FinanceMenu(label: 'Pemasukan', icon: Icons.attach_money),
-    _FinanceMenu(label: 'Pengeluaran', icon: Icons.outbond),
-    _FinanceMenu(label: 'Promosi', icon: Icons.percent),
-    _FinanceMenu(label: 'Rencana Belanja', icon: Icons.shopping_bag_outlined),
-    _FinanceMenu(label: 'Rugi Laba', icon: Icons.heart_broken),
-    _FinanceMenu(label: 'Upah', icon: Icons.work_outline),
-  ];
-
   const _MenuGridKeuangan({super.key});
 
+  static const menus = [
+    _FinanceMenu(label: 'Keuangan Proyek', desc: 'Cashflow per project', icon: Icons.savings_rounded),
+    _FinanceMenu(label: 'Operasional', desc: 'BBM, logistik, dll', icon: Icons.local_shipping_rounded),
+    _FinanceMenu(label: 'Pemasukan', desc: 'Invoice & pembayaran', icon: Icons.trending_up_rounded),
+    _FinanceMenu(label: 'Pengeluaran', desc: 'Pembelian & biaya', icon: Icons.trending_down_rounded),
+    _FinanceMenu(label: 'Promosi', desc: 'Iklan & campaign', icon: Icons.percent_rounded),
+    _FinanceMenu(label: 'Rencana Belanja', desc: 'Plan kebutuhan', icon: Icons.shopping_bag_outlined),
+    _FinanceMenu(label: 'Rugi Laba', desc: 'Laporan profit', icon: Icons.bar_chart_rounded),
+    _FinanceMenu(label: 'Upah', desc: 'Gaji & borongan', icon: Icons.work_outline_rounded),
+  ];
+
   void _handleTap(BuildContext context, String label) {
-    if (label == 'Keuangan') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const KeuanganProyekScreen()),
-      );
+    if (label == 'Keuangan Proyek') {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const KeuanganProyekScreen()));
       return;
     }
     if (label == 'Operasional') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const OperasionalScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const OperasionalScreen()));
       return;
     }
-
     if (label == 'Pemasukan') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PemasukanScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const PemasukanScreen()));
       return;
     }
     if (label == 'Pengeluaran') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PengeluaranScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const PengeluaranScreen()));
       return;
     }
     if (label == 'Promosi') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PromosiScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const PromosiScreen()));
       return;
     }
     if (label == 'Rencana Belanja') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RencanaBelanjaScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const RencanaBelanjaScreen()));
       return;
     }
     if (label == 'Rugi Laba') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RugiLabaScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const RugiLabaScreen()));
       return;
     }
     if (label == 'Upah') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const UpahScreen()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const UpahScreen()));
       return;
     }
 
-    // sementara untuk menu lain
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label (belum dibuat)')),
     );
@@ -355,15 +405,14 @@ class _MenuGridKeuangan extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: menus.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 16,
-        // dibuat lebih tinggi agar tidak overflow
-        childAspectRatio: 0.7,
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 1.55,
       ),
       itemBuilder: (context, index) {
         final item = menus[index];
-        return _MenuItemKeuangan(
+        return _FinanceCard(
           item: item,
           onTap: () => _handleTap(context, item.label),
         );
@@ -372,60 +421,77 @@ class _MenuGridKeuangan extends StatelessWidget {
   }
 }
 
-class _MenuItemKeuangan extends StatelessWidget {
+class _FinanceCard extends StatelessWidget {
   final _FinanceMenu item;
   final VoidCallback onTap;
 
-  const _MenuItemKeuangan({
-    super.key,
-    required this.item,
-    required this.onTap,
-  });
+  const _FinanceCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x26000000),
-                  blurRadius: 10,
-                  offset: Offset(0, 0),
-                ),
-              ],
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 18,
+              offset: Offset(0, 8),
             ),
-            child: Center(
-              child: Icon(
-                item.icon,
-                size: 28,
-                color: const Color(0xFF6B257F),
+          ],
+          border: Border.all(color: const Color(0x0FE8ECF4)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E4FF),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(item.icon, color: kPurple, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF24252C),
+                      fontSize: 14,
+                      fontFamily: 'Encode Sans',
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.desc,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 12,
+                      fontFamily: 'Work Sans',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            item.label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF8F8F8F),
-              fontSize: 11,
-              fontFamily: 'Ubuntu',
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
+            const Icon(Icons.arrow_forward_rounded, color: kPurple, size: 18),
+          ],
+        ),
       ),
     );
   }

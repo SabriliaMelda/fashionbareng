@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fashion_mobile/pages/home.dart'; // <-- tetap
+import 'package:fashion_mobile/pages/home.dart';
+import 'package:fashion_mobile/services/auth_service.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -9,15 +10,15 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  // toggle: true = telepon, false = email
   bool _usePhone = true;
 
   final TextEditingController _phoneC = TextEditingController();
   final TextEditingController _emailC = TextEditingController();
 
-  // password
   final TextEditingController _passC = TextEditingController();
   bool _obscure = true;
+
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -27,9 +28,59 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+  void _toast(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  bool _isEmail(String s) {
+    final v = s.trim();
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v);
+  }
+
+  // ============================================================
+  // ✅ DEMO MODE: KLIK LOGIN LANGSUNG MASUK HOME (DESAIN TIDAK DIUBAH)
+  // ============================================================
+  Future<void> _doLogin() async {
+    final password = _passC.text.trim();
+    final loginValue = _usePhone ? _phoneC.text.trim() : _emailC.text.trim();
+
+    // (opsional) validasi ringan biar enak pas demo
+    if (loginValue.isEmpty) {
+      _toast(_usePhone ? 'Nomor telepon wajib diisi.' : 'Email wajib diisi.');
+      return;
+    }
+
+    if (!_usePhone && !_isEmail(loginValue)) {
+      _toast('Format email tidak valid.');
+      return;
+    }
+
+    if (password.isEmpty) {
+      _toast('Password wajib diisi.');
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    // simulasi loading biar UX tetap halus
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+
+    // ⬇️ LANGSUNG PINDAH KE HOME
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+
+    if (mounted) setState(() => _loading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size; // tetap (meskipun tidak dipakai)
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -51,7 +102,6 @@ class _LoginState extends State<Login> {
                       children: [
                         const SizedBox(height: 16),
 
-                        // ===== BACK BUTTON =====
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Container(
@@ -75,7 +125,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 28),
 
-                        // ===== TITLE =====
                         const Text(
                           'Welcome back! Glad\nto see you, Again!',
                           style: TextStyle(
@@ -90,7 +139,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 32),
 
-                        // ===== TELEPON / EMAIL (TOGGLE) =====
                         Container(
                           height: 56,
                           decoration: BoxDecoration(
@@ -117,9 +165,10 @@ class _LoginState extends State<Login> {
                                 ),
                                 const SizedBox(width: 10),
                                 Container(
-                                    width: 1,
-                                    height: 22,
-                                    color: const Color(0xFFE8ECF4)),
+                                  width: 1,
+                                  height: 22,
+                                  color: const Color(0xFFE8ECF4),
+                                ),
                                 const SizedBox(width: 10),
                               ],
                               Expanded(
@@ -154,7 +203,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 8),
 
-                        // ===== TOGGLE TEXT (sesuai gambar) =====
                         GestureDetector(
                           onTap: () => setState(() => _usePhone = !_usePhone),
                           child: Text(
@@ -174,7 +222,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 16),
 
-                        // ===== PASSWORD FIELD =====
                         Container(
                           height: 56,
                           decoration: BoxDecoration(
@@ -192,6 +239,9 @@ class _LoginState extends State<Login> {
                                 child: TextField(
                                   controller: _passC,
                                   obscureText: _obscure,
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) =>
+                                  _loading ? null : _doLogin(),
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                     hintText: 'Kata sandi',
@@ -231,7 +281,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 8),
 
-                        // ===== FORGOT PASSWORD =====
                         const Align(
                           alignment: Alignment.centerRight,
                           child: Text(
@@ -247,7 +296,6 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 24),
 
-                        // ===== LOGIN BUTTON =====
                         SizedBox(
                           width: double.infinity,
                           height: 56,
@@ -259,15 +307,17 @@ class _LoginState extends State<Login> {
                               ),
                               elevation: 0,
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const HomeScreen(),
-                                ),
-                              );
-                            },
-                            child: const Text(
+                            onPressed: _loading ? null : _doLogin,
+                            child: _loading
+                                ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: Colors.white,
+                              ),
+                            )
+                                : const Text(
                               'Login',
                               style: TextStyle(
                                 color: Colors.white,
@@ -281,13 +331,14 @@ class _LoginState extends State<Login> {
 
                         const SizedBox(height: 32),
 
-                        // ===== OR LOGIN WITH =====
                         Row(
                           children: [
                             Expanded(
-                                child: Container(
-                                    height: 1,
-                                    color: const Color(0xFFE8ECF4))),
+                              child: Container(
+                                height: 1,
+                                color: const Color(0xFFE8ECF4),
+                              ),
+                            ),
                             const SizedBox(width: 12),
                             const Text(
                               'Or Login with',
@@ -300,15 +351,16 @@ class _LoginState extends State<Login> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                                child: Container(
-                                    height: 1,
-                                    color: const Color(0xFFE8ECF4))),
+                              child: Container(
+                                height: 1,
+                                color: const Color(0xFFE8ECF4),
+                              ),
+                            ),
                           ],
                         ),
 
                         const SizedBox(height: 24),
 
-                        // ===== SOCIAL BUTTONS =====
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -318,10 +370,8 @@ class _LoginState extends State<Login> {
                           ],
                         ),
 
-                        // ===== PUSH BOTTOM CONTENT SAFELY =====
                         const Expanded(child: SizedBox()),
 
-                        // ===== REGISTER TEXT =====
                         Center(
                           child: Text.rich(
                             TextSpan(
@@ -362,7 +412,6 @@ class _LoginState extends State<Login> {
     );
   }
 
-  // ===== SOCIAL BUTTON WIDGET =====
   Widget _socialButton(String assetPath) {
     return Container(
       width: 105,
@@ -373,8 +422,12 @@ class _LoginState extends State<Login> {
         border: Border.all(width: 1, color: const Color(0xFFE8ECF4)),
       ),
       child: Center(
-        child: Image.asset(assetPath,
-            width: 26, height: 26, fit: BoxFit.contain),
+        child: Image.asset(
+          assetPath,
+          width: 26,
+          height: 26,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

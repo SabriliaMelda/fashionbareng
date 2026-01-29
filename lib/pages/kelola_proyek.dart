@@ -150,7 +150,6 @@ class _MenuGrid extends StatelessWidget {
             label: item.$1,
             icon: item.$2,
             onTap: () {
-              // ✅ ROUTING (TAMBAHAN)
               if (item.$1 == 'Daftar Project') {
                 Navigator.push(
                   context,
@@ -179,7 +178,7 @@ class _MenuGrid extends StatelessWidget {
                     builder: (_) => const ChatScreen(),
                   ),
                 );
-              }else if (item.$1 == 'Pola') {
+              } else if (item.$1 == 'Pola') {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -187,7 +186,6 @@ class _MenuGrid extends StatelessWidget {
                   ),
                 );
               }
-
             },
           ),
       ],
@@ -262,19 +260,18 @@ class _SectionHeader extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Container(
-          width: 20,
-          height: 20,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFF9E9FF),
-            borderRadius: BorderRadius.circular(10),
+            color: const Color(0xFFF3E4FF),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0x1A6B257F)),
           ),
-          alignment: Alignment.center,
           child: Text(
             '$count',
             style: const TextStyle(
               fontSize: 11,
-              color: Color(0xFF5F33E1),
-              fontWeight: FontWeight.w500,
+              color: kPurple,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -283,31 +280,51 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ================== IN PROGRESS LIST ==================
+//
+// ================== IN PROGRESS LIST (REVISI - LEBIH NYAMBUNG) ==================
+//
 class _InProgressList extends StatelessWidget {
   const _InProgressList();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 140,
+      height: 178,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(right: 2),
         children: const [
           _InProgressCard(
             title: 'Grocery shopping app design',
             subtitle: 'Office Project',
-            cardColor: kCardPurple,
-            progressColor: kPurple,
             progress: 0.65,
+            accent: kPurple,
+            soft: Color(0xFFF7E1FF),
+            icon: Icons.storefront_rounded,
+            chip: 'UI/UX',
+            eta: '3 days left',
           ),
           SizedBox(width: 12),
           _InProgressCard(
-            title: 'Uber Eats redesign challange',
+            title: 'Uber Eats redesign challenge',
             subtitle: 'Personal Project',
-            cardColor: kLightPurple,
-            progressColor: Color(0xFFBA53FF),
             progress: 0.45,
+            accent: Color(0xFFBA53FF),
+            soft: Color(0xFFF3E4FF),
+            icon: Icons.delivery_dining_rounded,
+            chip: 'Redesign',
+            eta: '1 week left',
+          ),
+          SizedBox(width: 12),
+          _InProgressCard(
+            title: 'Landing page konveksi',
+            subtitle: 'Client Project',
+            progress: 0.82,
+            accent: kPurple,
+            soft: Color(0xFFF3E4FF),
+            icon: Icons.design_services_rounded,
+            chip: 'Web',
+            eta: '2 days left',
           ),
         ],
       ),
@@ -318,80 +335,216 @@ class _InProgressList extends StatelessWidget {
 class _InProgressCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final Color cardColor;
-  final Color progressColor;
   final double progress;
+
+  final Color accent;
+  final Color soft;
+  final IconData icon;
+  final String chip;
+  final String eta;
 
   const _InProgressCard({
     required this.title,
     required this.subtitle,
-    required this.cardColor,
-    required this.progressColor,
     required this.progress,
+    required this.accent,
+    required this.soft,
+    required this.icon,
+    required this.chip,
+    required this.eta,
   });
 
   @override
   Widget build(BuildContext context) {
+    final int percent = (progress.clamp(0.0, 1.0) * 100).round();
+
     return Container(
-      width: 210,
-      padding: const EdgeInsets.all(16),
+      width: 245,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(19),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            soft,
+            Colors.white,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+        border: Border.all(color: const Color(0x14FFFFFF)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF6E6A7C),
-                ),
-              ),
-              const Spacer(),
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFE4F2),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: const Icon(Icons.folder_open, color: kPurple, size: 16),
-              ),
-            ],
+          _InProgressTopRow(
+            subtitle: subtitle,
+            chip: chip,
+            accent: accent,
+            icon: icon,
           ),
           const SizedBox(height: 10),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              color: Color(0xFF24252C),
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const Spacer(),
-          Container(
-            height: 6,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(3),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: progressColor,
-                  borderRadius: BorderRadius.circular(3),
+          const SizedBox(height: 10),
+
+          // progress bar + badge %
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: const Color(0x1A000000)),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progress.clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        gradient: LinearGradient(
+                          colors: [accent, accent.withOpacity(0.6)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0x1A000000)),
+                ),
+                child: Text(
+                  '$percent%',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: accent,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          // footer info (ETA + kecil)
+          Row(
+            children: [
+              Icon(Icons.schedule_rounded, size: 16, color: accent.withOpacity(0.9)),
+              const SizedBox(width: 6),
+              Text(
+                eta,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF6E6A7C),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0x1A000000)),
+                ),
+                child: Icon(Icons.arrow_forward_rounded, color: accent, size: 18),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _InProgressTopRow extends StatelessWidget {
+  final String subtitle;
+  final String chip;
+  final Color accent;
+  final IconData icon;
+
+  const _InProgressTopRow({
+    required this.subtitle,
+    required this.chip,
+    required this.accent,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // chip kategori
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.75),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0x1A000000)),
+          ),
+          child: Text(
+            chip,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: accent,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // subtitle
+        Expanded(
+          child: Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF6E6A7C),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+
+        // icon box
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0x1A000000)),
+          ),
+          child: Icon(icon, color: accent, size: 18),
+        ),
+      ],
     );
   }
 }
@@ -489,6 +642,7 @@ class _TaskGroupProgressBadge extends StatelessWidget {
         style: const TextStyle(
           fontSize: 11,
           color: Color(0xFF24252C),
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

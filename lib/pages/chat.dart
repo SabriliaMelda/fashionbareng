@@ -1,9 +1,11 @@
 // chat.dart
-import 'package:fashion_mobile/pages/profile.dart';
-import 'package:fashion_mobile/pages/settings.dart';
-import 'package:fashion_mobile/pages/wishlist.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'home.dart'; // <-- tambahkan ini (pastikan file & class sesuai)
+
+import 'home.dart';
+import 'wishlist.dart';
+import 'settings.dart';
+import 'profile.dart';
 
 const kPurple = Color(0xFF6B257F);
 
@@ -14,11 +16,21 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
+// NOTE: typo fix (CreateState -> createState)
+extension _FixState on ChatScreen {
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _searchC = TextEditingController();
+
+  // true = Chats, false = Groups
   bool _showChats = true;
 
-  final List<_ChatItem> _items = [
+  String _query = '';
+
+  // Dummy chats
+  final List<_ChatItem> _chats = [
     _ChatItem(
       name: 'Kaitlyn',
       message: 'Have a good one!',
@@ -70,7 +82,49 @@ class _ChatScreenState extends State<ChatScreen> {
     ),
   ];
 
-  String _query = '';
+  // Dummy groups
+  final List<_GroupItem> _groups = const [
+    _GroupItem(
+      name: 'Group Penjahit',
+      subtitle: 'Diskusi jahit & standar QC',
+      members: 128,
+      lastMessage: 'Admin: besok meeting jam 10',
+      time: '1:20 PM',
+      icon: Icons.cut,
+    ),
+    _GroupItem(
+      name: 'Group Hoodie',
+      subtitle: 'Bahan, pola, ukuran hoodie',
+      members: 87,
+      lastMessage: 'Rina: kain fleece bagus yang mana?',
+      time: '12:05 PM',
+      icon: Icons.checkroom,
+    ),
+    _GroupItem(
+      name: 'Group Packaging',
+      subtitle: 'Poly mailer, box, label',
+      members: 52,
+      lastMessage: 'Aji: stok box size M aman',
+      time: 'Yesterday',
+      icon: Icons.inventory_2_outlined,
+    ),
+    _GroupItem(
+      name: 'Group Supplier Kain',
+      subtitle: 'Harga kain & rekomendasi supplier',
+      members: 203,
+      lastMessage: 'Harga combed naik 2k/meter',
+      time: 'Yesterday',
+      icon: Icons.storefront_outlined,
+    ),
+    _GroupItem(
+      name: 'Group Produksi',
+      subtitle: 'Timeline produksi & koordinasi',
+      members: 64,
+      lastMessage: 'Deadline batch #12: Jumat',
+      time: 'Mon',
+      icon: Icons.factory_outlined,
+    ),
+  ];
 
   @override
   void dispose() {
@@ -80,62 +134,56 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _items.where((e) {
+    final chatsFiltered = _chats.where((e) {
       if (_query.trim().isEmpty) return true;
       final q = _query.toLowerCase();
-      return e.name.toLowerCase().contains(q) || e.message.toLowerCase().contains(q);
+      return e.name.toLowerCase().contains(q) ||
+          e.message.toLowerCase().contains(q);
+    }).toList();
+
+    final groupsFiltered = _groups.where((g) {
+      if (_query.trim().isEmpty) return true;
+      final q = _query.toLowerCase();
+      return g.name.toLowerCase().contains(q) ||
+          g.subtitle.toLowerCase().contains(q) ||
+          g.lastMessage.toLowerCase().contains(q);
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F7FB),
       bottomNavigationBar: const _BottomNavBar(activeIndex: 3),
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            // ===== HEADER GRADIENT =====
+            _HeaderGradient(
+              onNotif: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Notifikasi')),
+                );
+              },
+              searchController: _searchC,
+              onSearchChanged: (v) => setState(() => _query = v),
+              onClear: () {
+                _searchC.clear();
+                setState(() => _query = '');
+              },
+            ),
 
-            // ===== TOP ROW: Search + bell (avatar dihapus) =====
+            const SizedBox(height: 12),
+
+            // ===== TITLE + ACTION =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(
-                    child: _SearchPill(
-                      controller: _searchC,
-                      onChanged: (v) => setState(() => _query = v),
-                      onClear: () {
-                        _searchC.clear();
-                        setState(() => _query = '');
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  _IconPill(
-                    icon: Icons.notifications_none_rounded,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notifikasi')),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // ===== Title + New message =====
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  const Expanded(
                     child: Text(
-                      'Recent chats',
-                      style: TextStyle(
-                        color: kPurple,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
+                      _showChats ? 'Recent Chats' : 'Groups',
+                      style: const TextStyle(
+                        color: Color(0xFF1F1F1F),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
                         fontFamily: 'Plus Jakarta Sans',
                       ),
                     ),
@@ -144,48 +192,62 @@ class _ChatScreenState extends State<ChatScreen> {
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('New message')),
+                        SnackBar(
+                          content: Text(_showChats
+                              ? 'New message (dummy)'
+                              : 'Create group (dummy)'),
+                        ),
                       );
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE8ECF4)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0D000000),
+                            blurRadius: 12,
+                            offset: Offset(0, 6),
+                          )
+                        ],
+                      ),
                       child: Row(
                         children: [
-                          Text(
-                            '+',
-                            style: TextStyle(
-                              color: kPurple,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          Icon(
+                            _showChats ? Icons.edit_outlined : Icons.group_add,
+                            size: 18,
+                            color: kPurple,
                           ),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
-                            'New message',
-                            style: TextStyle(
+                            _showChats ? 'New' : 'Create',
+                            style: const TextStyle(
                               color: kPurple,
                               fontSize: 12,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'Plus Jakarta Sans',
                             ),
                           ),
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            // ===== Segmented: Chats / Groups =====
+            // ===== SEGMENTED (CHIPS STYLE) =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _Segmented(
+              child: _SegmentedChips(
+                activeLeft: _showChats,
                 left: 'Chats',
                 right: 'Groups',
-                activeLeft: _showChats,
                 onTapLeft: () => setState(() => _showChats = true),
                 onTapRight: () => setState(() => _showChats = false),
               ),
@@ -193,14 +255,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
             const SizedBox(height: 12),
 
-            // ===== LIST =====
+            // ===== LIST CONTENT =====
             Expanded(
-              child: ListView.separated(
+              child: _showChats
+                  ? ListView.separated(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                itemCount: filtered.length,
+                itemCount: chatsFiltered.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, i) {
-                  final item = filtered[i];
+                  final item = chatsFiltered[i];
                   return _SwipeChatRow(
                     item: item,
                     onOpen: () {
@@ -220,9 +283,281 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   );
                 },
+              )
+                  : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                itemCount: groupsFiltered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, i) {
+                  final g = groupsFiltered[i];
+                  return _GroupRow(
+                    group: g,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Buka group: ${g.name}')),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+//
+// ===================== HEADER (GRADIENT + SEARCH) =====================
+//
+class _HeaderGradient extends StatelessWidget {
+  final VoidCallback onNotif;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onClear;
+
+  const _HeaderGradient({
+    required this.onNotif,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6B257F), Color(0xFF4F1E63)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(22),
+          bottomRight: Radius.circular(22),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // Back
+              _HeaderIcon(
+                icon: Icons.arrow_back_ios_new_rounded,
+                onTap: () => Navigator.pop(context),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Chat',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              // Notif
+              _HeaderIcon(
+                icon: Icons.notifications_none_rounded,
+                onTap: onNotif,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _SearchPillBetter(
+            controller: searchController,
+            onChanged: onSearchChanged,
+            onClear: onClear,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeaderIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HeaderIcon({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.16)),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+}
+
+class _SearchPillBetter extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  const _SearchPillBetter({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.16)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, size: 20, color: Colors.white70),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Search chat / group...',
+                hintStyle: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          if (controller.text.isNotEmpty)
+            InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: onClear,
+              child: const Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(Icons.close, size: 18, color: Colors.white70),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+//
+// ===================== SEGMENTED CHIPS =====================
+//
+class _SegmentedChips extends StatelessWidget {
+  final String left;
+  final String right;
+  final bool activeLeft;
+  final VoidCallback onTapLeft;
+  final VoidCallback onTapRight;
+
+  const _SegmentedChips({
+    required this.left,
+    required this.right,
+    required this.activeLeft,
+    required this.onTapLeft,
+    required this.onTapRight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8ECF4)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 14,
+            offset: Offset(0, 8),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ChipItem(
+              text: left,
+              active: activeLeft,
+              onTap: onTapLeft,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _ChipItem(
+              text: right,
+              active: !activeLeft,
+              onTap: onTapRight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChipItem extends StatelessWidget {
+  final String text;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _ChipItem({
+    required this.text,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? const Color(0xFFF3E4FF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: active ? const Color(0xFFE3C7F0) : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: active ? kPurple : const Color(0xFF6B7280),
+            fontSize: 13,
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );
@@ -252,183 +587,27 @@ class _ChatItem {
   });
 }
 
-//
-// ===================== UI PARTS =====================
-//
-class _SearchPill extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
-
-  const _SearchPill({
-    required this.controller,
-    required this.onChanged,
-    required this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F0),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, size: 20, color: Color(0xFF010101)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              onChanged: onChanged,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Search',
-                hintStyle: TextStyle(
-                  color: Color(0xFF010101),
-                  fontSize: 12,
-                  fontFamily: 'Plus Jakarta Sans',
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              style: const TextStyle(
-                color: Color(0xFF010101),
-                fontSize: 12,
-                fontFamily: 'Plus Jakarta Sans',
-              ),
-            ),
-          ),
-          if (controller.text.isNotEmpty)
-            InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: onClear,
-              child: const Padding(
-                padding: EdgeInsets.all(6),
-                child: Icon(Icons.close, size: 18, color: Color(0xFF777777)),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _IconPill extends StatelessWidget {
+class _GroupItem {
+  final String name;
+  final String subtitle;
+  final int members;
+  final String lastMessage;
+  final String time;
   final IconData icon;
-  final VoidCallback onTap;
 
-  const _IconPill({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F0),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Icon(icon, size: 22, color: const Color(0xFF010101)),
-      ),
-    );
-  }
-}
-
-class _Segmented extends StatelessWidget {
-  final String left;
-  final String right;
-  final bool activeLeft;
-  final VoidCallback onTapLeft;
-  final VoidCallback onTapRight;
-
-  const _Segmented({
-    required this.left,
-    required this.right,
-    required this.activeLeft,
-    required this.onTapLeft,
-    required this.onTapRight,
+  const _GroupItem({
+    required this.name,
+    required this.subtitle,
+    required this.members,
+    required this.lastMessage,
+    required this.time,
+    required this.icon,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment(0.05, 0.10),
-          end: Alignment(1.27, 1.27),
-          colors: [Color(0xFF9F82AD), Color(0x3FEBD4F3)],
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _SegItem(text: left, active: activeLeft, onTap: onTapLeft),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _SegItem(text: right, active: !activeLeft, onTap: onTapRight),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-class _SegItem extends StatelessWidget {
-  final String text;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _SegItem({
-    required this.text,
-    required this.active,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Container(
-        height: 32,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: active
-              ? const [
-            BoxShadow(
-              color: Color(0x19000000),
-              blurRadius: 40,
-              offset: Offset(0, 2),
-            )
-          ]
-              : null,
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 14,
-            fontFamily: 'Plus Jakarta Sans',
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+//
+// ===================== CHAT ROW (SWIPE) =====================
+//
 class _SwipeChatRow extends StatelessWidget {
   final _ChatItem item;
   final VoidCallback onOpen;
@@ -445,7 +624,7 @@ class _SwipeChatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: ValueKey(item.name),
+      key: ValueKey('chat_${item.name}'),
       background: const _SwipeBg(
         color: Color(0xFFEBEDFF),
         icon: Icons.folder_outlined,
@@ -465,96 +644,86 @@ class _SwipeChatRow extends StatelessWidget {
         return false;
       },
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         onTap: onOpen,
         child: Container(
-          height: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: item.selected ? const Color(0xFF3641B7) : const Color(0xFFE6E6E6),
-              width: 1,
+              color: item.selected
+                  ? const Color(0xFFB58BC8)
+                  : const Color(0xFFE8ECF4),
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0CB3B3B3),
-                blurRadius: 40,
-                offset: Offset(0, 16),
+                color: Color(0x0D000000),
+                blurRadius: 16,
+                offset: Offset(0, 8),
               )
             ],
           ),
           child: Row(
             children: [
-              CircleAvatar(radius: 20, backgroundImage: NetworkImage(item.avatarUrl)),
-              const SizedBox(width: 10),
+              _AvatarNetwork(url: item.avatarUrl, name: item.name),
+              const SizedBox(width: 12),
+
+              // text
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF010101),
-                        fontSize: 14,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 14,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          item.time,
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 11,
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      item.message,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF3C3C3C),
-                        fontSize: 14,
-                        fontFamily: 'Plus Jakarta Sans',
-                        fontWeight: FontWeight.w400,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.message,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF4B5563),
+                              fontSize: 13,
+                              fontFamily: 'Plus Jakarta Sans',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        if (item.unread > 0)
+                          _UnreadBadge(count: item.unread),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    item.time,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (item.unread > 0)
-                    Container(
-                      width: 16,
-                      height: 16,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3641B7),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        '${item.unread}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          height: 1,
-                          fontFamily: 'Plus Jakarta Sans',
-                        ),
-                      ),
-                    ),
-                ],
               ),
             ],
           ),
@@ -578,14 +747,191 @@ class _SwipeBg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Icon(icon, color: const Color(0xFF6B6B6B), size: 22),
+    );
+  }
+}
+
+class _UnreadBadge extends StatelessWidget {
+  final int count;
+  const _UnreadBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: kPurple,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontFamily: 'Plus Jakarta Sans',
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarNetwork extends StatelessWidget {
+  final String url;
+  final String name;
+
+  const _AvatarNetwork({required this.url, required this.name});
+
+  Color _seedColor(String s) {
+    final r = Random(s.hashCode);
+    return Color.fromARGB(255, 120 + r.nextInt(80), 80 + r.nextInt(80), 140 + r.nextInt(80));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = _seedColor(name);
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        width: 46,
+        height: 46,
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) {
+            return Container(
+              color: bg.withOpacity(0.22),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: TextStyle(
+                  color: bg,
+                  fontSize: 16,
+                  fontFamily: 'Plus Jakarta Sans',
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+//
+// ===================== GROUP ROW =====================
+//
+class _GroupRow extends StatelessWidget {
+  final _GroupItem group;
+  final VoidCallback onTap;
+
+  const _GroupRow({
+    required this.group,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE8ECF4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D000000),
+              blurRadius: 16,
+              offset: Offset(0, 8),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E4FF),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(group.icon, color: kPurple, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          group.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFF111827),
+                            fontSize: 14,
+                            fontFamily: 'Plus Jakarta Sans',
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        group.time,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 11,
+                          fontFamily: 'Plus Jakarta Sans',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    group.lastMessage,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF4B5563),
+                      fontSize: 13,
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${group.members} members • ${group.subtitle}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 11,
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -619,23 +965,45 @@ class _BottomNavBar extends StatelessWidget {
               );
             },
           ),
-          _NavItem(label: 'Wishlist', icon: Icons.favorite_border, active: activeIndex == 1, onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const WishlistScreen()),
-            );
-          }),
-          _NavItem(label: 'Settings', icon: Icons.settings_outlined, active: activeIndex == 2, onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            );
-          }),
-          _NavItem(label: 'Chat', icon: Icons.chat_bubble_outline, active: activeIndex == 3, onTap: () {}),
-          _NavItem(label: 'Profile', icon: Icons.person_outline, active: activeIndex == 4, onTap: () { Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          );}),
+          _NavItem(
+            label: 'Wishlist',
+            icon: Icons.favorite_border,
+            active: activeIndex == 1,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const WishlistScreen()),
+              );
+            },
+          ),
+          _NavItem(
+            label: 'Settings',
+            icon: Icons.settings_outlined,
+            active: activeIndex == 2,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+          _NavItem(
+            label: 'Chat',
+            icon: Icons.chat_bubble_outline,
+            active: activeIndex == 3,
+            onTap: () {},
+          ),
+          _NavItem(
+            label: 'Profile',
+            icon: Icons.person_outline,
+            active: activeIndex == 4,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -658,7 +1026,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = active ? kPurple : const Color(0xFFC9CBCE);
-    final fontWeight = active ? FontWeight.w700 : FontWeight.w400;
+    final fontWeight = active ? FontWeight.w800 : FontWeight.w500;
 
     return InkWell(
       borderRadius: BorderRadius.circular(24),
