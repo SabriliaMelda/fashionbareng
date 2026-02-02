@@ -413,15 +413,18 @@ class _MenuGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
+      // ===== BARIS ATAS =====
       ('Jadwal', Icons.calendar_today),
       ('Pekerja', Icons.group),
-      ('Pola', Icons.design_services),
       ('Upah', Icons.attach_money),
-      ('Chat', Icons.chat_bubble_outline),
+      ('Rugi Laba', Icons.bar_chart),
+      ('Pola', Icons.design_services),
+
+      // ===== BARIS BAWAH =====
       ('Beli', Icons.shopping_bag_outlined),
       ('Promosi', Icons.campaign_outlined),
-      ('Rugi Laba', Icons.bar_chart),
       ('Wishlist', Icons.favorite_border),
+      ('Chat', Icons.chat_bubble_outline),
       ('More', Icons.grid_view_rounded),
     ];
 

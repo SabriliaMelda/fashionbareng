@@ -1,6 +1,6 @@
 // upah.dart
 import 'package:flutter/material.dart';
-import'home.dart';
+import 'home.dart';
 
 const Color kPurple = Color(0xFF6B257F);
 
@@ -14,6 +14,9 @@ class UpahScreen extends StatefulWidget {
 class _UpahScreenState extends State<UpahScreen> {
   _UpahTab _tab = _UpahTab.status;
   int _projectIndex = 0; // untuk tab per project
+
+  // ✅ FILTER TAGIHAN (ICON ONLY)
+  int _filterIndex = 0; // 0: Semua, 1: Belum, 2: Jatuh Tempo, 3: Lunas
 
   // =========================
   // DUMMY DATA (FASHION)
@@ -68,8 +71,18 @@ class _UpahScreenState extends State<UpahScreen> {
   // =========================
   String _fmtDate(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des'
     ];
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
@@ -85,12 +98,27 @@ class _UpahScreenState extends State<UpahScreen> {
     return 'Rp $buf';
   }
 
-  List<_UpahBill> get _activeList {
+  // ✅ BASE LIST: scope by tab/project
+  List<_UpahBill> get _baseList {
     if (_tab == _UpahTab.perProject) {
       final p = _projects[_projectIndex];
       return _bills.where((e) => e.project == p).toList();
     }
     return _bills;
+  }
+
+  // ✅ ACTIVE LIST: base + filter status
+  List<_UpahBill> get _activeList {
+    final base = _baseList;
+
+    if (_filterIndex == 0) return base; // Semua
+    if (_filterIndex == 1) {
+      return base.where((e) => e.status == _BillStatus.belumDibayar).toList();
+    }
+    if (_filterIndex == 2) {
+      return base.where((e) => e.status == _BillStatus.jatuhTempo).toList();
+    }
+    return base.where((e) => e.status == _BillStatus.lunas).toList();
   }
 
   int get _totalUnpaid => _activeList
@@ -281,8 +309,8 @@ class _UpahScreenState extends State<UpahScreen> {
                         child: _ChoicePill(
                           label: 'Belum',
                           active: status == _BillStatus.belumDibayar,
-                          onTap: () => setLocal(
-                                  () => status = _BillStatus.belumDibayar),
+                          onTap: () =>
+                              setLocal(() => status = _BillStatus.belumDibayar),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -290,8 +318,8 @@ class _UpahScreenState extends State<UpahScreen> {
                         child: _ChoicePill(
                           label: 'J. Tempo',
                           active: status == _BillStatus.jatuhTempo,
-                          onTap: () => setLocal(
-                                  () => status = _BillStatus.jatuhTempo),
+                          onTap: () =>
+                              setLocal(() => status = _BillStatus.jatuhTempo),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -323,23 +351,19 @@ class _UpahScreenState extends State<UpahScreen> {
                             if (name.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Nama pekerja wajib diisi')),
+                                  content: Text('Nama pekerja wajib diisi'),
+                                ),
                               );
                               return;
                             }
-                            final amount =
-                                int.tryParse(amountC.text.trim()) ?? 0;
+                            final amount = int.tryParse(amountC.text.trim()) ?? 0;
 
                             final newBill = _UpahBill(
                               date: DateTime.now(),
                               workerName: name,
-                              role: roleC.text.trim().isEmpty
-                                  ? '-'
-                                  : roleC.text.trim(),
+                              role: roleC.text.trim().isEmpty ? '-' : roleC.text.trim(),
                               project: _projects[projectPick],
-                              note: noteC.text.trim().isEmpty
-                                  ? '-'
-                                  : noteC.text.trim(),
+                              note: noteC.text.trim().isEmpty ? '-' : noteC.text.trim(),
                               amount: amount < 0 ? 0 : amount,
                               due: due,
                               status: status,
@@ -350,8 +374,8 @@ class _UpahScreenState extends State<UpahScreen> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content:
-                                  Text('Tagihan upah ditambahkan (dummy)')),
+                                content: Text('Tagihan upah ditambahkan (dummy)'),
+                              ),
                             );
                           },
                           child: Container(
@@ -528,6 +552,54 @@ class _UpahScreenState extends State<UpahScreen> {
     );
   }
 
+  // ✅ FILTER TAGIHAN (ICON ONLY) - TANPA TULISAN
+  Widget _buildBillFilter() {
+    final items = <_FilterItem>[
+      const _FilterItem(icon: Icons.list_alt_rounded, tooltip: 'Semua'),
+      const _FilterItem(icon: Icons.schedule_rounded, tooltip: 'Belum'),
+      const _FilterItem(icon: Icons.warning_amber_rounded, tooltip: 'Jatuh Tempo'),
+      const _FilterItem(icon: Icons.check_circle_rounded, tooltip: 'Lunas'),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Row(
+        children: List.generate(items.length, (i) {
+          final active = _filterIndex == i;
+          final it = items[i];
+
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i == items.length - 1 ? 0 : 10),
+              child: Tooltip(
+                message: it.tooltip,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => setState(() => _filterIndex = i),
+                  child: Container(
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: active ? kPurple : const Color(0xFFF6F7F8),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: active ? kPurple : const Color(0xFFE8ECF4),
+                      ),
+                    ),
+                    child: Icon(
+                      it.icon,
+                      size: 20,
+                      color: active ? Colors.white : const Color(0xFF6A707C),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
   Widget _buildSummary() {
     final unpaid = _totalUnpaid;
     final paid = _totalPaid;
@@ -624,7 +696,7 @@ class _UpahScreenState extends State<UpahScreen> {
     if (data.isEmpty) {
       return const Center(
         child: Text(
-          'Belum ada tagihan upah.',
+          'Tidak ada tagihan sesuai filter.',
           style: TextStyle(
             color: Color(0xFF6A707C),
             fontSize: 12.5,
@@ -667,8 +739,8 @@ class _UpahScreenState extends State<UpahScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.work_outline,
-                    color: kPurple, size: 20),
+                child:
+                const Icon(Icons.work_outline, color: kPurple, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -752,7 +824,6 @@ class _UpahScreenState extends State<UpahScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: kPurple,
         foregroundColor: Colors.white,
@@ -760,7 +831,6 @@ class _UpahScreenState extends State<UpahScreen> {
         onPressed: _openAddSheet,
         child: const Icon(Icons.add_rounded, size: 26),
       ),
-
       body: SafeArea(
         child: Column(
           children: [
@@ -832,6 +902,9 @@ class _UpahScreenState extends State<UpahScreen> {
             // ===== SUB SUB MENU (PER PROJECT) =====
             _buildProjectSubMenu(),
 
+            // ✅ FILTER ICON ONLY
+            _buildBillFilter(),
+
             const SizedBox(height: 12),
 
             // ===== SUMMARY =====
@@ -880,7 +953,9 @@ class _TabPill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16, color: active ? Colors.white : const Color(0xFF1E232C)),
+              Icon(icon,
+                  size: 16,
+                  color: active ? Colors.white : const Color(0xFF1E232C)),
               const SizedBox(width: 6),
             ],
             Text(
@@ -1089,7 +1164,8 @@ class _SheetAction extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF9AA4B2), size: 18),
+            const Icon(Icons.chevron_right_rounded,
+                color: Color(0xFF9AA4B2), size: 18),
           ],
         ),
       ),
@@ -1201,6 +1277,14 @@ class _InputField extends StatelessWidget {
       ],
     );
   }
+}
+
+//
+// ================== SMALL MODELS
+class _FilterItem {
+  final IconData icon;
+  final String tooltip;
+  const _FilterItem({required this.icon, required this.tooltip});
 }
 
 //

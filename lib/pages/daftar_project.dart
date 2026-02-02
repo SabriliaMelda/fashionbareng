@@ -36,6 +36,10 @@ class _DaftarProyekScreenState extends State<DaftarProyekScreen> {
       progress: (0.25 + (i % 4) * 0.18).clamp(0.0, 1.0),
       imagePath: images[i % images.length],
       deadline: '${(i % 9) + 2} hari lagi',
+
+      // ✅ NILAI PROJECT (DUMMY)
+      // 15jt + naik 3.5jt tiap index biar variatif
+      nilaiProject: 15000000 + (i * 3500000),
     );
   });
 
@@ -280,10 +284,22 @@ class _HeaderIcon extends StatelessWidget {
   }
 }
 
-// ================== PROJECT CARD (DENGAN GAMBAR) ==================
+// ================== PROJECT CARD (DENGAN GAMBAR + NILAI PROJECT) ==================
 class _ProjectCard extends StatelessWidget {
   final _Project project;
   const _ProjectCard({required this.project});
+
+  String _formatRupiah(int v) {
+    // format sederhana: 15000000 -> Rp 15.000.000
+    final s = v.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      final indexFromEnd = s.length - i;
+      buf.write(s[i]);
+      if (indexFromEnd > 1 && indexFromEnd % 3 == 1) buf.write('.');
+    }
+    return 'Rp $buf';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -429,6 +445,18 @@ class _ProjectCard extends StatelessWidget {
                       fontFamily: 'Work Sans',
                     ),
                   ),
+                  const SizedBox(height: 6),
+
+                  // ✅ NILAI PROJECT
+                  Text(
+                    _formatRupiah(project.nilaiProject),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'Work Sans',
+                    ),
+                  ),
                   const SizedBox(height: 8),
 
                   // progress bar
@@ -517,6 +545,9 @@ class _Project {
   final String imagePath;
   final String deadline;
 
+  // ✅ NILAI PROJECT
+  final int nilaiProject;
+
   _Project({
     required this.id,
     required this.title,
@@ -525,5 +556,6 @@ class _Project {
     required this.progress,
     required this.imagePath,
     required this.deadline,
+    required this.nilaiProject,
   });
 }

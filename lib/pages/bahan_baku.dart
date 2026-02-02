@@ -46,10 +46,9 @@ class _BahanBakuScreenState extends State<BahanBakuScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _QuickMenuRow(),
+                    const _QuickMenuGrid(), // ✅ 2 baris, muat 6
                     const SizedBox(height: 18),
 
-                    // ✅ Category sekarang controlled dari parent
                     _CategoryRow(
                       active: _activeCategory,
                       categories: _categories,
@@ -58,7 +57,6 @@ class _BahanBakuScreenState extends State<BahanBakuScreen> {
 
                     const SizedBox(height: 18),
 
-                    // ✅ Rekomendasi tergantung category aktif
                     _RekomendasiSection(category: _category),
 
                     const SizedBox(height: 18),
@@ -122,9 +120,7 @@ class _Header extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _SearchBar(
-            onTap: () {},
-          ),
+          _SearchBar(onTap: () {}),
         ],
       ),
     );
@@ -193,9 +189,9 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-// ================== QUICK MENU (HORIZONTAL) ==================
-class _QuickMenuRow extends StatelessWidget {
-  const _QuickMenuRow();
+// ================== QUICK MENU (GRID 2 BARIS / 6 ITEM) ==================
+class _QuickMenuGrid extends StatelessWidget {
+  const _QuickMenuGrid();
 
   @override
   Widget build(BuildContext context) {
@@ -221,21 +217,26 @@ class _QuickMenuRow extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 98,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final it = items[index];
-              return _QuickCard(
-                label: it.label,
-                icon: it.icon,
-                onTap: () => _goQuick(context, it.label),
-              );
-            },
+
+        // ✅ 2 baris, 3 kolom (muat 6)
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.35, // makin kecil cardnya (lebih ramping)
           ),
+          itemBuilder: (context, i) {
+            final it = items[i];
+            return _QuickCardSmall(
+              label: it.label,
+              icon: it.icon,
+              onTap: () => _goQuick(context, it.label),
+            );
+          },
         ),
       ],
     );
@@ -275,12 +276,12 @@ class _QuickItem {
   const _QuickItem(this.label, this.icon);
 }
 
-class _QuickCard extends StatelessWidget {
+class _QuickCardSmall extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
 
-  const _QuickCard({
+  const _QuickCardSmall({
     required this.label,
     required this.icon,
     required this.onTap,
@@ -292,8 +293,7 @@ class _QuickCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
-        width: 110,
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
@@ -309,23 +309,26 @@ class _QuickCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // ✅ ICON + BOX DIPERKECIL
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: const Color(0xFFF3E4FF),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: kPurple, size: 22),
+              alignment: Alignment.center,
+              child: Icon(icon, color: kPurple, size: 20),
             ),
             const SizedBox(height: 8),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF24252C),
-                fontSize: 12,
+                fontSize: 11.5,
                 fontFamily: 'Work Sans',
                 fontWeight: FontWeight.w800,
               ),
@@ -418,8 +421,6 @@ class _RekomendasiSection extends StatelessWidget {
   const _RekomendasiSection({required this.category});
 
   List<_Product> _dataByCategory(String cat) {
-    // ✅ Ganti asset sesuai koleksi kamu
-    // Pastikan file ada dan terdaftar di pubspec.yaml
     switch (cat) {
       case 'Benang':
         return const [

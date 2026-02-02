@@ -28,6 +28,10 @@ class KeuanganScreen extends StatelessWidget {
     const target = 'Rp 20.000.000';
     const progressValue = 0.30; // 30%
 
+    // ✅ dummy hutang piutang
+    const totalHutang = 'Rp 2.450.000';
+    const totalPiutang = 'Rp 5.120.000';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FB),
       body: SafeArea(
@@ -141,7 +145,7 @@ class KeuanganScreen extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // target progress
+                  // target progress + hutang/piutang
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -185,7 +189,9 @@ class KeuanganScreen extends StatelessWidget {
                             value: progressValue,
                             minHeight: 10,
                             backgroundColor: Colors.white.withOpacity(0.18),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF1FFF3)),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFFF1FFF3),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -198,6 +204,31 @@ class KeuanganScreen extends StatelessWidget {
                             fontFamily: 'Work Sans',
                             fontWeight: FontWeight.w700,
                           ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ✅ JEJERAN HUTANG & PIUTANG
+                        Row(
+                          children: const [
+                            Expanded(
+                              child: _MiniStat(
+                                label: 'Hutang',
+                                value: totalHutang,
+                                icon: Icons.credit_card_rounded,
+                                valueColor: Color(0xFFFFC2D1),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: _MiniStat(
+                                label: 'Piutang',
+                                value: totalPiutang,
+                                icon: Icons.account_balance_wallet_rounded,
+                                valueColor: Color(0xFFF1FFF3),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
