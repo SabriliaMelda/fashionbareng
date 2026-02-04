@@ -123,7 +123,7 @@ class _WelcomeState extends State<Welcome> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   _sliderImages.length,
-                      (index) => Padding(
+                  (index) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: Dot(isActive: _currentPage == index),
                   ),
@@ -174,7 +174,7 @@ class _WelcomeState extends State<Welcome> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Register(), // <-- KE REGISTER
+                      builder: (context) => RegisterScreen(), // <-- KE REGISTER
                     ),
                   );
                 },

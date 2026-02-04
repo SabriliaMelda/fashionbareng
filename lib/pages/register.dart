@@ -1,9 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:fashion_mobile/services/api_service.dart'; // PENTING: Pakai ini
+import 'package:fashion_mobile/services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
-  // Ubah nama class biar rapi
   const RegisterScreen({super.key});
 
   @override
@@ -11,21 +10,17 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  // Toggle: true = telepon, false = email
   bool _usePhone = true;
 
+  // Controllers (Hanya data diri dasar)
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
 
-  // ✅ TAMBAHAN: Controller Spesialisasi
-  final _specializationController = TextEditingController();
-
-  // ✅ TAMBAHAN: Variabel Dropdown Role
-  String? _selectedRole;
-  // Pastikan tulisannya 'staff', 'pekerja' (Huruf kecil semua) biar aman masuk database
-  final List<String> _roles = ['staff', 'pekerja', 'manajer', 'admin'];
+  // ❌ Controller Spesialisasi DIHAPUS
 
   bool _obscurePass = true;
   bool _obscureConfirm = true;
@@ -39,7 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passController.dispose();
     _confirmPassController.dispose();
-    _specializationController.dispose();
     super.dispose();
   }
 
@@ -61,20 +55,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailController.text.trim();
     final password = _passController.text;
     final confirm = _confirmPassController.text;
-    final specialization = _specializationController.text.trim();
 
     // Validasi
     if (name.isEmpty) {
       _toast('Nama wajib diisi');
       return;
     }
-
-    // ⚠️ CEK ROLE
-    if (_selectedRole == null) {
-      _toast('Jabatan (Role) wajib dipilih!');
-      return;
-    }
-
     if (_usePhone && phone.isEmpty) {
       _toast('No HP wajib diisi');
       return;
@@ -83,7 +69,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _toast('Email wajib diisi');
       return;
     }
-
     if (password.length < 6) {
       _toast('Password min 6 karakter');
       return;
@@ -99,14 +84,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final finalEmail = _usePhone ? '' : email;
       final finalPhone = _usePhone ? phone : '';
 
-      // PANGGIL API
+      // ✅ SETTING OTOMATIS UNTUK PEMILIK BISNIS
+      // Backend PHP tetap butuh data ini, jadi kita isi otomatis di balik layar.
+      const defaultRole = 'owner';
+      const defaultSpecialization = 'Owner';
+
       final result = await ApiService().register(
         name,
         finalEmail,
         finalPhone,
         password,
-        _selectedRole!, // <-- Kirim Role yang dipilih
-        specialization,
+        defaultRole,
       );
 
       if (result['status'] == 'success') {
@@ -117,7 +105,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       _toast("Gagal koneksi: $e");
-      print(e);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -129,13 +116,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        // Pakai SingleChildScrollView biasa (Tanpa Expanded) biar gak error garis kuning
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(22, 16, 22, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back Button
               GestureDetector(
                 onTap: _isLoading ? null : () => Navigator.pop(context),
                 child: Container(
@@ -162,45 +147,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               _inputField(controller: _nameController, hint: 'Nama Lengkap'),
               const SizedBox(height: 16),
 
-              // ✅ DROPDOWN ROLE (YANG HILANG DARI FILE ASLI KAMU)
-              Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFF7F8F9),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFE8ECF4))),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedRole,
-                    hint: const Text("Pilih Jabatan",
-                        style: TextStyle(
-                            color: Color(0xFF8390A1),
-                            fontSize: 15,
-                            fontFamily: 'Urbanist')),
-                    isExpanded: true,
-                    items: _roles.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.toUpperCase(),
-                            style: const TextStyle(
-                                color: Color(0xFF1E232C),
-                                fontSize: 15,
-                                fontFamily: 'Urbanist',
-                                fontWeight: FontWeight.w600)),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) =>
-                        setState(() => _selectedRole = newValue),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _inputField(
-                  controller: _specializationController,
-                  hint: 'Spesialisasi (Cth: Jahit)'),
-              const SizedBox(height: 16),
+              // ❌ Input Spesialisasi SUDAH HILANG DARI SINI
 
               _usePhone
                   ? _phoneField(
@@ -238,7 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       setState(() => _obscureConfirm = !_obscureConfirm)),
 
               const SizedBox(height: 16),
-              // Checkbox Syarat
               Row(
                 children: [
                   Checkbox(
@@ -254,7 +200,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               const SizedBox(height: 20),
-              // Tombol Register
               SizedBox(
                 width: double.infinity,
                 height: 56,
