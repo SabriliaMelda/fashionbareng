@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 03 Feb 2026 pada 20.12
+-- Waktu pembuatan: 04 Feb 2026 pada 06.50
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -99,11 +99,10 @@ INSERT INTO `projects` (`id`, `project_name`, `category`, `urgency_level`, `stat
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `full_name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL,
-  `specialization` varchar(100) DEFAULT NULL,
   `photo_url` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -111,9 +110,10 @@ CREATE TABLE `users` (
 -- Dumping data untuk tabel `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `email`, `phone_number`, `password`, `role`, `specialization`, `photo_url`) VALUES
-(1, 'Sabrilia', 'admin@konveksi.com', '81235531683', '$2y$10$BIx0wZ0seeTF8L3W..vJNeL1xw.Tk.ceAzf7QU1LxvpNCEDH1kNc6', 'owner', 'Admin', 'http://192.168.0.162/api_web_fashion/uploads/profiles/user_1_1770134691.jpg'),
-(23, 'Boma Wykan Adikusuma', '', '88888888888', '$2y$10$R6x26oZ/dOXG.nFkw2GCp.JioUe2LuBWi3Ro6VfeLUpYwbyQXWB9y', 'manajer', 'CEO', NULL);
+INSERT INTO `users` (`id`, `full_name`, `email`, `phone_number`, `password`, `role`, `photo_url`) VALUES
+(1, 'Sabrilia', 'admin@konveksi.com', '81235531683', '$2y$10$BIx0wZ0seeTF8L3W..vJNeL1xw.Tk.ceAzf7QU1LxvpNCEDH1kNc6', 'owner', 'http://192.168.0.162/api_web_fashion/uploads/profiles/user_1_1770134691.jpg'),
+(32, 'Raphael', NULL, '81235531689', '$2y$10$ebELW2njB4n.amOCNNcDQeSf.UZV4onk40k1Rqf/NczkyvfGw40vq', 'owner', NULL),
+(33, 'Admin', NULL, '787878', '$2y$10$/6vcz.gT96O7r4Ds.jRdDuva0xHNJNM6kh9Qfu626/shHnVEguf/S', 'owner', NULL);
 
 --
 -- Indexes for dumped tables
@@ -171,7 +171,7 @@ ALTER TABLE `projects`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
