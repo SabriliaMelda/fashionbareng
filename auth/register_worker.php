@@ -8,14 +8,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // ... (Bagian atas sama) ...
 
     $full_name      = $_POST['full_name'];
-    $email          = $_POST['email'];
-    $phone_number   = $_POST['phone_number']; // Tambah ini
-    $password       = $_POST['password']; 
+    $email          = empty($_POST['email']) ? NULL : $_POST['email'];
+    $phone_number   = empty($_POST['phone_number']) ? NULL : $_POST['phone_number'];$password       = $_POST['password']; 
+    $password       = $_POST['password'];
     $role           = $_POST['role']; 
-    $specialization = $_POST['specialization'];
 
     // Cek Email ATAU No HP sudah ada belum
-    $checkQuery = "SELECT id FROM users WHERE email = ? OR phone_number = ?";
+    // Cek hanya jika datanya TIDAK KOSONG (!= '')
+    $checkQuery = "SELECT id FROM users WHERE (email = ? AND email != '') OR (phone_number = ? AND phone_number != '')";
     $stmt = $conn->prepare($checkQuery);
     $stmt->bind_param("ss", $email, $phone_number);
     $stmt->execute();
@@ -27,15 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert Data Lengkap
-        $insertQuery = "INSERT INTO users (full_name, email, phone_number, password, role, specialization) VALUES (?, ?, ?, ?, ?, ?)";
+        $insertQuery = "INSERT INTO users (full_name, email, phone_number, password, role) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insertQuery);
         // "ssssss" artinya ada 6 string
-        $stmt->bind_param("ssssss", $full_name, $email, $phone_number, $hashed_password, $role, $specialization);
+        $stmt->bind_param("sssss", $full_name, $email, $phone_number, $hashed_password, $role);
 
         if ($stmt->execute()) {
-            echo json_encode(["status" => "success", "message" => "Pekerja berhasil didaftarkan"]);
+            echo json_encode(["status" => "success", "message" => "Pendaftaran Berhasil"]);
         } else {
-            echo json_encode(["status" => "error", "message" => "Gagal mendaftar"]);
+            echo json_encode(["status" => "error", "message" => "Pendaftaran Gagal"]);
         }
     }
 // ...

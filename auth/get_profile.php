@@ -3,7 +3,7 @@ include '../config/database.php';
 
 $id = $_GET['id'];
 
-$query = "SELECT id, full_name, email, phone_number, role, specialization FROM users WHERE id = ?";
+$query = "SELECT id, full_name, email, phone_number, role FROM users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id);
 $stmt->execute();
